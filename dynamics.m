@@ -16,6 +16,11 @@ classdef dynamics
         R;       %attitude, direction cosine matrix
         R_det;
         
+        d = zeros(6, 1); %disturbance
+        sigma_f_w = 6;   %distribution of the force disturbance
+        sigma_tau_w = 6; %distribution of the torque disturbance
+        tau_c = 3.2;     %correlation time of the wind disturbance
+        
         prv_angle;
         
         f;       %control force
@@ -25,13 +30,20 @@ classdef dynamics
     methods
         function f_next = integrator(obj, f_now, f_dot, dt)
             %euler method
-            f_next = [f_now(1) + (f_dot(1) * dt);
-                f_now(2) + (f_dot(2) * dt);
-                f_now(3) + (f_dot(3) * dt)];
+            f_next = f_now + f_dot .* dt;
         end
         
         function ret_obj = update(obj)
             math = se3_math;
+            
+            %simulate external disturbance
+            inv_cor_time = -1 / obj.tau_c;
+            A_d = inv_cor_time .* eye(6, 6);
+            noise = randn(6, 1);
+            noise(1:3) = obj.sigma_f_w * noise(1:3);
+            noise(4:6) = obj.sigma_tau_w * noise(4:6);
+            d_dot = A_d * obj.d + noise;
+            obj.d = obj.integrator(obj.d, d_dot, obj.dt);
             
             %calculate angular velocity by integrating angular acceleration
             obj.W = obj.integrator(obj.W, obj.W_dot, obj.dt);
@@ -62,13 +74,13 @@ classdef dynamics
             
             %calculate current accelration from force
             e3 = [0; 0; 1];
-            mv_dot = (obj.mass * obj.g * e3) - obj.f;
+            mv_dot = (obj.mass * obj.g * e3) - obj.f + obj.d(1:3);
             obj.a = mv_dot / obj.mass;
             
             %calculate current aungular acceleration from moment
             JW = obj.J * obj.W;
             WJW = cross(obj.W, JW);
-            obj.W_dot = inv(obj.J) * (obj.M - WJW);
+            obj.W_dot = inv(obj.J) * (obj.M - WJW - obj.d(4:6));
             
             ret_obj = obj;
         end
