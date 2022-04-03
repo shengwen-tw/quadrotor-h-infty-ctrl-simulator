@@ -5,11 +5,11 @@ function gamma=hinf(A, B, C, D)
 
     while(abs(gamma_u - gamma_l) > eps)
         %bisection searching
-        gamma = (gamma_l + gamma_u) / 2
+        gamma = (gamma_l + gamma_u) / 2;
     
         %construct Hamiltonian matrix
         H = [      A,         (1/gamma)*(B*B');
-             -(1/gamma)*C.'*C,       -A      ];
+             -(1/gamma)*C.'*C,       -A.'    ];
     
         if(has_pure_img_eigen(H) == 0)
             gamma_u = gamma; %decrease gamma upper bound
@@ -23,7 +23,7 @@ function retval=has_pure_img_eigen(H)
     retval = 0;
     [eig_vec, eig_val] = eig(H);
     for i= 1 : max(size(H))
-        if(~isreal(eig_val(i, i)) && abs(real(eig_val(i, i))) < 1e-6)
+        if(~isreal(eig_val(i, i)) && abs(real(eig_val(i, i))) < 1e-2)
             retval = 1;
             return;
         end

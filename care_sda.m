@@ -1,9 +1,8 @@
-function X = care_sda(A, B, H, R)
+function X = care_sda(A, B, H, G)
 state_dimension = length(A);
 
 r = 2.4; %SDA's author suggested the value between 2.1~2.6
 I = eye(state_dimension);
-G = B*inv(R)*transpose(B);
 A_trans = transpose(A);
 A_r = A - (r*I);
 
