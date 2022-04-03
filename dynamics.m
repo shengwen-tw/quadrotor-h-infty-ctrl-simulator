@@ -74,13 +74,15 @@ classdef dynamics
             
             %calculate current accelration from force
             e3 = [0; 0; 1];
-            mv_dot = (obj.mass * obj.g * e3) - obj.f + obj.d(1:3);
+            %mv_dot = (obj.mass * obj.g * e3) - obj.f + obj.d(1:3);
+            mv_dot = (obj.mass * obj.g * e3) - obj.f;
             obj.a = mv_dot / obj.mass;
             
             %calculate current aungular acceleration from moment
             JW = obj.J * obj.W;
             WJW = cross(obj.W, JW);
             obj.W_dot = inv(obj.J) * (obj.M - WJW - obj.d(4:6));
+            obj.W_dot = inv(obj.J) * (obj.M - WJW);
             
             ret_obj = obj;
         end
