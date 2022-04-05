@@ -245,7 +245,7 @@ for i = 1: ITERATION_TIMES
     %construct desired setpoint vector
     x0 = [deg2rad(0); %desired roll
           deg2rad(0); %desired pitch
-          deg2rad(0); %desired yaw
+          deg2rad(0); %yaw_d(i); %desired yaw
           0;          %desired roll
           0;          %desired pitch
           0;          %desired yaw
@@ -370,7 +370,7 @@ plot(time_arr, euler_arr(2, :));
 xlabel('time [s]');
 ylabel('pitch [deg]');
 subplot (3, 1, 3);
-plot(time_arr, euler_arr(3, :));
+plot(time_arr, euler_arr(3, :), time_arr, rad2deg(yaw_d(1, :)));
 xlabel('time [s]');
 ylabel('yaw [deg]');
 
