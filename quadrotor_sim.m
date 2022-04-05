@@ -32,10 +32,6 @@ Ix = uav_dynamics.J(1, 1);
 Iy = uav_dynamics.J(2, 2);
 Iz = uav_dynamics.J(3, 3);
 
-C1 = eye(12, 12);
-C2 = eye(12, 12);
-C1t = C1.';
-
 B1 = [0    0   0   0   0   0;
       0    0   0   0   0   0;
       0    0   0   0   0   0;
@@ -61,19 +57,46 @@ B2 = [0   0   0   0;
       0   0   0   0;
       0   0   0   0;
       0   0   0   0];
-  
-B1t = B1.';
-B1B1t = B1 * B1t;
 
-B2t = B2.';
-B2B2t = B2 * B2t;
+C1 = zeros(16, 12);
+C1(1, 1) = 4.5;  %roll
+C1(2, 2) = 4.5;  %pitch
+C1(3, 3) = 4.5;  %yaw
+C1(4, 4) = 2.5;  %roll rate
+C1(5, 5) = 2.5;  %pitch rate
+C1(6, 6) = 2.5;  %yaw rate
+C1(7, 7) = 15;   %vx
+C1(8, 8) = 15;   %vy
+C1(9, 9) = 15;   %vz
+C1(10, 10) = 70; %x
+C1(11, 11) = 70; %y
+C1(12, 12) = 30; %z
 
-C1C1t = -C1t * C1;
-
-D12 = B1;
-D21 = B2;
+D12 = [0 0 0 0;
+       0 0 0 0;
+       0 0 0 0;
+       0 0 0 0;
+       0 0 0 0;
+       0 0 0 0;
+       0 0 0 0;
+       0 0 0 0;
+       0 0 0 0;
+       0 0 0 0;
+       0 0 0 0;
+       0 0 0 0;
+     0.3 0 0 0;  %f
+       0 1 0 0;  %tau_x
+       0 0 1 0;  %tau_y
+       0 0 0 1]; %tau_z
+   
+C2 = eye(12, 12);
+D21 = 0;
 
 I_6x6 = eye(6, 6);
+B1B1t = B1 * B1.';
+B2B2t = B2 * B2.';
+C1tC1 = C1.' * C1;
+B2t = B2.';
 
 %controller setpoints
 xd = zeros(3, ITERATION_TIMES);
@@ -227,29 +250,29 @@ for i = 1: ITERATION_TIMES
     % solve CARE (Continuous-time Algebraic Riccati Equation) %
     %=========================================================%
     
-    r = 10000;
+    gamma = hinf(A - B2*B2.', B1, C1-D12*B2.', 0)
         
     %method1: SDA (Structure-Preserving Doubling Algorithm)
-    inv_r2 = 1 / (r*r);
+    inv_r2 = 1 / (gamma*gamma);
     r2_B1B1t_B2B2t = (inv_r2 .* B1B1t) - B2B2t; %G
     %
     tstart = tic();
-    X = care_sda(A, B2, C1C1t, r2_B1B1t_B2B2t);
+    X = care_sda(A, B2, C1tC1, r2_B1B1t_B2B2t);
     tend = tic();
-    sda_x_norm = norm(At*X + X*A - X*r2_B1B1t_B2B2t*X + C1C1t);
+    sda_x_norm = norm(At*X + X*A - X*r2_B1B1t_B2B2t*X + C1tC1);
     sda_time = tend - tstart;
 
     %method2: MATLAB
     B = [B1, B2];
     Bt = B.';
     R = eye(10, 10); %disturbance (6x1) + control input (4x1)
-    R(1:6, 1:6) = -(r*r) * R(1:6, 1:6);
+    R(1:6, 1:6) = -(gamma*gamma) * R(1:6, 1:6);
     BRBt = B * R * Bt;
     %
     tstart = tic();
     %[X, L, G_dummy] = care(A, B, C1C1t, R);
     tend = tic();
-    matlab_x_norm = norm(At*X + X*A - X*BRBt*X + C1C1t);
+    matlab_x_norm = norm(At*X + X*A - X*BRBt*X + C1tC1);
     matlab_time = tend - tstart;
     
     %efficiency comparison of CARE solvers
