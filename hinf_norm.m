@@ -1,4 +1,4 @@
-function gamma=hinf(A, B, C, D)
+function gamma=hinf_norm(A, B, C, D)
     eps = 1e-6;
     gamma_l = 0;
     gamma_u = 1e10;
@@ -21,9 +21,10 @@ end
 
 function retval=has_pure_img_eigen(H)
     retval = 0;
-    [eig_vec, eig_val] = eig(H);
+    [V, D] = eig(H);
+        
     for i= 1 : max(size(H))
-        if(~isreal(eig_val(i, i)) && abs(real(eig_val(i, i))) < 1e-2)
+        if(~isreal(D(i, i)) && abs(real(D(i, i))) < 1e-2)
             retval = 1;
             return;
         end

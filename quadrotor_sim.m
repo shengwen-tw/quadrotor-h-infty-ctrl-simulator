@@ -266,9 +266,10 @@ for i = 1: ITERATION_TIMES
     Z = care_sda(At, 0, H, G);
     B1t = B1.';
     C1t = C1.';
-    gamma_lb = hinf(A - Z*C1t*C1, C1t, B1t, 0);
-    gamma = gamma_lb * 1.1;
-
+        
+    gamma_lb = hinf_norm(A - Z*C1t*C1, C1t, B1t, 0);
+    gamma = gamma_lb;
+    
     %method1: SDA (Structure-Preserving Doubling Algorithm)
     if 1 %H-infinity control
     inv_r2 = 1 / (gamma*gamma);
