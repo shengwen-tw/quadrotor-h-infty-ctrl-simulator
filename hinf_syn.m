@@ -1,19 +1,34 @@
-function gamma=hinf_syn(A, B, C, D)
+function gamma=hinf_syn(A, B1, B2, C1, D)
     eps = 1e-6;
-    gamma_l = 0;
     gamma_u = 1e10;
 
+    %calculate lower bound gamma
+    At = A.';
+    B2t = B2.';
+    H = -B2 * B2t;
+    G = -C1.' * C1;
+    Z = care_sda(At, 0, H, G);
+    B1t = B1.';
+    C1t = C1.';
+    gamma_l = hinf_norm(A - Z*C1t*C1, C1t, B1t, 0);
+
+    %bisection and secant method start
     while(abs(gamma_u - gamma_l) > eps)
         %bisection searching
         gamma = (gamma_l + gamma_u) / 2;
     
         %construct Hamiltonian matrix
-        H = [      A,         (1/gamma)*(B*B');
-             -(1/gamma)*C.'*C,       -A.'    ];
+        H = [   A,         1/(gamma*gamma).*(B1*B1t) - B2*B2t;
+             -C1t*C1,                       -A.'            ];
     
         if(has_pure_img_eigen(H) == 0)
-            get_stable_invariant_subspace(H);
-            gamma_u = gamma; %decrease gamma upper bound          
+            [T1, T2] = get_stable_invariant_subspace(H);
+            X = T2 * inv(T1);
+            if(is_psd_matrix(X) == 1)
+               gamma_u = gamma; %decrease gamma upper bound 
+            else
+               gamma_l = gamma; %increase gamma lower bound
+            end         
         else
             gamma_l = gamma; %increase gamma lower bound
         end    
@@ -25,7 +40,7 @@ function [T1, T2]=get_stable_invariant_subspace(H)
     [m, n] = size(H);
     
     V_stable = [];
-    D_stable = zeros(12, 12);
+    D_stable = zeros(m/2, n/2);
     j = 1;
     for i = 1:m
         if(real(D(i, i)) > 0)
@@ -37,8 +52,8 @@ function [T1, T2]=get_stable_invariant_subspace(H)
         j = j + 1;
     end
     
-    T1 = V_stable(1:m/2);
-    T2 = V_stable(m/2+1: m);
+    T1 = V_stable(1:m/2, :);
+    T2 = V_stable(m/2+1:m, :);
     
     %disp(norm(H*V_new - V_new*D_new));
 end
@@ -51,6 +66,17 @@ function retval=has_pure_img_eigen(H)
         if(~isreal(D(i, i)) && abs(real(D(i, i))) < 1e-2)
             retval = 1;
             return;
+        end
+    end
+end
+
+function retval=is_psd_matrix(A)
+    retval = 1;
+    [V, D] = eig(A);
+    for i= 1 : max(size(A))
+        if(real(D(i, i)) < 0)
+            retval = 0;
+            rerurn;
         end
     end
 end

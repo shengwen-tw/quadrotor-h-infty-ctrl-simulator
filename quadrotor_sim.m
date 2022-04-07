@@ -259,16 +259,8 @@ for i = 1: ITERATION_TIMES
     %=========================================================%
     % solve CARE (Continuous-time Algebraic Riccati Equation) %
     %=========================================================%
-    
-    At = A.';
-    H = -B2 * B2.';
-    G = -C1.' * C1;
-    Z = care_sda(At, 0, H, G);
-    B1t = B1.';
-    C1t = C1.';
-        
-    gamma_lb = hinf_norm(A - Z*C1t*C1, C1t, B1t, 0);
-    gamma = gamma_lb;
+            
+    gamma = hinf_syn(A, B1, B2, C1, 0);
     
     %method1: SDA (Structure-Preserving Doubling Algorithm)
     if 1 %H-infinity control
