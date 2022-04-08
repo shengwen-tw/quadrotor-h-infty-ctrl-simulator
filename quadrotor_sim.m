@@ -164,8 +164,11 @@ for i = 1: ITERATION_TIMES
     vd(3, i) = climb_rate;
 end
 
+progress_tok = waitbar(0, 'Starting');
 for i = 1: ITERATION_TIMES
-    disp(i);
+    %disp(i);
+    prompt = sprintf('Progress: %d %%', floor(i/ITERATION_TIMES*100));
+    waitbar(i/ITERATION_TIMES, progress_tok, prompt);
     
     %========================%
     % Update System Dynamics %
@@ -263,42 +266,30 @@ for i = 1: ITERATION_TIMES
     gamma = hinf_syn(A, B1, B2, C1, 0);
     
     %method1: SDA (Structure-Preserving Doubling Algorithm)
-    if 1 %H-infinity control
     inv_r2 = 1 / (gamma*gamma);
-    r2_B1B1t_B2B2t = (inv_r2 .* B1B1t) - B2B2t; %G
+    r2_B1B1t_B2B2t = -((inv_r2 .* B1B1t) - B2B2t); %G
     %
     tstart = tic();
     X = care_sda(A, B2, C1tC1, r2_B1B1t_B2B2t);
-    tend = tic();
+    sda_time = toc(tstart);
     sda_x_norm = norm(At*X + X*A - X*r2_B1B1t_B2B2t*X + C1tC1);
-    sda_time = tend - tstart;
-    end
-    
-    %H2 control
-    if 0
-    G = B2*B2.';
-    H = C1.'*C1;
-
-    tstart = tic();
-    X = care_sda(A, B1, H, G);
-    tend = tic();
-    sda_x_norm = norm(At*X + X*A - X*G*X + H);
-    sda_time = tend - tstart;
-    end
-    
+    %sda_time = tend - tstart;
+        
     %method2: MATLAB
     if COMPARE_MATLAB_SDA ~= 0
         B = [B1, B2];
         Bt = B.';
-        R = eye(10, 10); %disturbance (6x1) + control input (4x1)
-        R(1:6, 1:6) = -(gamma*gamma) * R(1:6, 1:6);
+        m1 = size(B1, 2);
+        m2 = size(B2, 2);
+        R = [-gamma^2*eye(m1) zeros(m1, m2);
+                 zeros(m2,m1)      eye(m2)];
         BRBt = B * R * Bt;
         %
         tstart = tic();
         [X, L, G_dummy] = care(A, B, C1tC1, R);
-        tend = tic();
+        matlab_time = toc(tstart);
         matlab_x_norm = norm(At*X + X*A - X*BRBt*X + C1tC1);
-        matlab_time = tend - tstart;
+        %matlab_time = tend - tstart
     
         %efficiency comparison of CARE solvers
         speed_inc = matlab_time / sda_time;
