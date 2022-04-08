@@ -93,7 +93,7 @@ D12 = [0 0 0 0;
        0 0 0 0;
        0 0 0 0;
        0 0 0 0;
-     0.3 0 0 0;  %f
+       1 0 0 0;  %f
        0 1 0 0;  %tau_x
        0 0 1 0;  %tau_y
        0 0 0 1]; %tau_z
@@ -167,7 +167,7 @@ end
 progress_tok = waitbar(0, 'Starting');
 for i = 1: ITERATION_TIMES
     %disp(i);
-    prompt = sprintf('Progress: %d %%', floor(i/ITERATION_TIMES*100));
+    prompt = sprintf('Progress: %d %%\n(%d/%d)', floor(i/ITERATION_TIMES*100), i, ITERATION_TIMES);
     waitbar(i/ITERATION_TIMES, progress_tok, prompt);
     
     %========================%
@@ -262,18 +262,18 @@ for i = 1: ITERATION_TIMES
     %=========================================================%
     % solve CARE (Continuous-time Algebraic Riccati Equation) %
     %=========================================================%
-            
+    
+    %H-infinity control synthesis
     gamma = hinf_syn(A, B1, B2, C1, 0);
     
     %method1: SDA (Structure-Preserving Doubling Algorithm)
     inv_r2 = 1 / (gamma*gamma);
-    r2_B1B1t_B2B2t = -((inv_r2 .* B1B1t) - B2B2t); %G
+    r2_B1B1t_B2B2t = -((inv_r2 .* B1B1t) - B2B2t);
     %
     tstart = tic();
     X = care_sda(A, B2, C1tC1, r2_B1B1t_B2B2t);
     sda_time = toc(tstart);
     sda_x_norm = norm(At*X + X*A - X*r2_B1B1t_B2B2t*X + C1tC1);
-    %sda_time = tend - tstart;
         
     %method2: MATLAB
     if COMPARE_MATLAB_SDA ~= 0
@@ -289,7 +289,6 @@ for i = 1: ITERATION_TIMES
         [X, L, G_dummy] = care(A, B, C1tC1, R);
         matlab_time = toc(tstart);
         matlab_x_norm = norm(At*X + X*A - X*BRBt*X + C1tC1);
-        %matlab_time = tend - tstart
     
         %efficiency comparison of CARE solvers
         speed_inc = matlab_time / sda_time;
@@ -354,7 +353,7 @@ plot(time_arr, euler_arr(2, :));
 xlabel('time [s]');
 ylabel('pitch [deg]');
 subplot (3, 1, 3);
-plot(time_arr, euler_arr(3, :), time_arr, rad2deg(yaw_d(1, :)));
+plot(time_arr, euler_arr(3, :));
 xlabel('time [s]');
 ylabel('yaw [deg]');
 
@@ -456,6 +455,7 @@ ylabel('-\tau_{wz}');
 disp("Press any key to leave");
 pause;
 close all;
+delete(progress_tok);
 end
 
 function quad_sim_greeting(dynamics, iteration_times, init_attitude)

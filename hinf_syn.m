@@ -76,7 +76,7 @@ function retval=is_psd_matrix(A)
     for i= 1 : max(size(A))
         if(real(D(i, i)) < 0)
             retval = 0;
-            rerurn;
+            return;
         end
     end
 end
