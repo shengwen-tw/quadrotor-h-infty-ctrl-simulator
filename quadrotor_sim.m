@@ -264,7 +264,12 @@ for i = 1: ITERATION_TIMES
     %=========================================================%
     
     %H-infinity control synthesis
-    gamma = hinf_syn(A, B1, B2, C1, 0);
+    %tstart = tic();
+    [gamma, X_] = hinf_syn(A, B1, B2, C1, 0);
+    %sda_time = toc(tstart);
+    %inv_r2 = 1 / (gamma*gamma);
+    %r2_B1B1t_B2B2t = -((inv_r2 .* B1B1t) - B2B2t);
+    %sda_x_norm = norm(At*X_ + X_*A - X_*r2_B1B1t_B2B2t*X_ + C1tC1)
     
     %method1: SDA (Structure-Preserving Doubling Algorithm)
     inv_r2 = 1 / (gamma*gamma);
@@ -286,9 +291,9 @@ for i = 1: ITERATION_TIMES
         BRBt = B * R * Bt;
         %
         tstart = tic();
-        [X, L, G_dummy] = care(A, B, C1tC1, R);
+        [X_, L, G_dummy] = care(A, B, C1tC1, R);
         matlab_time = toc(tstart);
-        matlab_x_norm = norm(At*X + X*A - X*BRBt*X + C1tC1);
+        matlab_x_norm = norm(At*X_ + X_*A - X_*BRBt*X_ + C1tC1);
     
         %efficiency comparison of CARE solvers
         speed_inc = matlab_time / sda_time;

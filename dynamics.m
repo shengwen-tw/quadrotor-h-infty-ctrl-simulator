@@ -17,8 +17,8 @@ classdef dynamics
         R_det;
         
         d = zeros(6, 1); %disturbance
-        sigma_f_w = 6;   %distribution of the force disturbance
-        sigma_tau_w = 6; %distribution of the torque disturbance
+        sigma_f_w = 2.5;   %distribution of the force disturbance
+        sigma_tau_w = 2.5; %distribution of the torque disturbance
         tau_c = 3.2;     %correlation time of the wind disturbance
         
         prv_angle;
@@ -42,8 +42,14 @@ classdef dynamics
             noise = randn(6, 1);
             noise(1:3) = obj.sigma_f_w * noise(1:3);
             noise(4:6) = obj.sigma_tau_w * noise(4:6);
-            d_dot = A_d * obj.d + noise;
-            obj.d = obj.integrator(obj.d, d_dot, obj.dt);
+            if 1
+                %disturbance as random noise:
+                obj.d = noise;
+            else
+                %disturbance as ODE
+                %d_dot = A_d * obj.d + noise;
+                %obj.d = obj.integrator(obj.d, d_dot, obj.dt);
+            end
             
             %calculate angular velocity by integrating angular acceleration
             obj.W = obj.integrator(obj.W, obj.W_dot, obj.dt);

@@ -1,4 +1,4 @@
-function gamma=hinf_syn(A, B1, B2, C1, D)
+function [gamma, X]=hinf_syn(A, B1, B2, C1, D)
     eps = 1e-6;
     gamma_u = 1e10;
 
@@ -11,7 +11,9 @@ function gamma=hinf_syn(A, B1, B2, C1, D)
     B1t = B1.';
     C1t = C1.';
     gamma_l = hinf_norm(A - Z*C1t*C1, C1t, B1t, 0);
-
+    
+    %approximate a upper bound
+    
     %bisection and secant method start
     while(abs(gamma_u - gamma_l) > eps)
         %bisection searching
@@ -22,8 +24,9 @@ function gamma=hinf_syn(A, B1, B2, C1, D)
              -C1t*C1,                       -A.'            ];
     
         if(has_pure_img_eigen(H) == 0)
-            [T1, T2] = get_stable_invariant_subspace(H);
+            [T1, T2] = get_stable_invariant_subspace(H);           
             X = T2 * inv(T1);
+            
             if(is_psd_matrix(X) == 1)
                gamma_u = gamma; %decrease gamma upper bound 
             else
@@ -43,13 +46,11 @@ function [T1, T2]=get_stable_invariant_subspace(H)
     D_stable = zeros(m/2, n/2);
     j = 1;
     for i = 1:m
-        if(real(D(i, i)) > 0)
-            continue;
+        if(real(D(i, i)) < -1e-6)
+            V_stable = [V_stable, V(:, i)];
+            D_stable(j, j) = D(i, i);
+            j = j + 1;
         end
-
-        V_stable = [V_stable, V(:, i)];
-        D_stable(j, j) = D(i, i);
-        j = j + 1;
     end
     
     T1 = V_stable(1:m/2, :);
@@ -63,7 +64,7 @@ function retval=has_pure_img_eigen(H)
     [V, D] = eig(H);
         
     for i= 1 : max(size(H))
-        if(~isreal(D(i, i)) && abs(real(D(i, i))) < 1e-2)
+        if(~isreal(D(i, i)) && abs(real(D(i, i))) < 1e-6)
             retval = 1;
             return;
         end

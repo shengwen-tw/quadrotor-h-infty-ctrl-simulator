@@ -24,7 +24,7 @@ function retval=has_pure_img_eigen(H)
     [V, D] = eig(H);
         
     for i= 1 : max(size(H))
-        if(~isreal(D(i, i)) && abs(real(D(i, i))) < 1e-2)
+        if(~isreal(D(i, i)) && abs(real(D(i, i))) < 1e-6)
             retval = 1;
             return;
         end
