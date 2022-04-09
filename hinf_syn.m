@@ -8,9 +8,12 @@ function [gamma, X]=hinf_syn(A, B1, B2, C1, D)
     H = B2 * B2t;
     G = C1.' * C1;
     Z = care_sda(At, 0, H, G); %a fixed-point iteration algorithm for solving CARE
+    %z_norm = norm(A*Z + Z*At - Z*G*Z + H);
+    %disp(z_norm)
     B1t = B1.';
     C1t = C1.';
-    gamma_l = hinf_norm(A - Z*C1t*C1, C1t, B1t, 0);
+    gamma_l = hinf_norm((A - Z*C1t*C1).', C1t, B1t, 0);
+    %gamma_l = hinf_norm((A - Z*C1t*C1).', C1t, B1t, 0)+ 100;
     
     %assign an upper bound gamma
     gamma_u = 1e10;
