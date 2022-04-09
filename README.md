@@ -5,6 +5,12 @@ It requires level of  mathematical knowledge to understand the theory compared t
 
 The project provides a design example for the quadrotor without relying on external packages. All of the code are written in MATLAB.
 
+## Run simulation
+
+```
+execute quadrotor_sim.m
+```
+
 ## References
 
 Papers related to the quadrotor control:
