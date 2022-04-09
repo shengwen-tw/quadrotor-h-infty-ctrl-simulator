@@ -1,11 +1,12 @@
 function [gamma, X]=hinf_syn(A, B1, B2, C1, D)
     eps = 1e-6;
+    iteration = 0;
 
     %calculate lower bound gamma
     At = A.';
     B2t = B2.';
-    H = -B2 * B2t;
-    G = -C1.' * C1;
+    H = B2 * B2t;
+    G = C1.' * C1;
     Z = care_sda(At, 0, H, G); %a fixed-point iteration algorithm for solving CARE
     B1t = B1.';
     C1t = C1.';
@@ -16,6 +17,8 @@ function [gamma, X]=hinf_syn(A, B1, B2, C1, D)
     
     %bisection and secant method start
     while(abs(gamma_u - gamma_l) > eps)
+        iteration = iteration + 1;
+        
         %bisection searching
         gamma = (gamma_l + gamma_u) / 2;
     
@@ -37,6 +40,8 @@ function [gamma, X]=hinf_syn(A, B1, B2, C1, D)
             gamma_l = gamma; %increase gamma lower bound
         end    
     end
+    
+    %disp(iteration);
 end
 
 function [T1, T2]=get_stable_invariant_subspace(H)
