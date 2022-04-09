@@ -12,11 +12,16 @@ function [gamma, X]=hinf_syn(A, B1, B2, C1, D)
     %disp(z_norm)
     B1t = B1.';
     C1t = C1.';
-    gamma_l = hinf_norm((A - Z*C1t*C1).', C1t, B1t, 0);
-    %gamma_l = hinf_norm((A - Z*C1t*C1).', C1t, B1t, 0)+ 100;
+    %gamma_l = hinf_norm((A - Z*C1t*C1).', C1t, B1t, 0);
+    gamma_l = hinf_norm((A - Z*C1t*C1).', C1t, B1t, 0) + 100;
     
-    %assign an upper bound gamma
-    gamma_u = 1e10;
+    %approximate an upper bound gamma:
+    %this is not the exact upper bound of the gamma. user should check
+    %the value is feasible before using it.
+    rho_max = eigs(B1.'*B1, 1,'lm'); %largest singular value of the B1
+    rho_0 = eigs(B2.'*B2, 1,'sm');   %smallest singular value of the B2
+    gamma_u = rho_max / rho_0;
+    %gamma_u = 1e10;
     
     %bisection and secant method start
     while(abs(gamma_u - gamma_l) > eps)
