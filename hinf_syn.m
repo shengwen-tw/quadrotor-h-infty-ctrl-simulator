@@ -1,18 +1,18 @@
 function [gamma, X]=hinf_syn(A, B1, B2, C1, D)
     eps = 1e-6;
-    gamma_u = 1e10;
 
     %calculate lower bound gamma
     At = A.';
     B2t = B2.';
     H = -B2 * B2t;
     G = -C1.' * C1;
-    Z = care_sda(At, 0, H, G);
+    Z = care_sda(At, 0, H, G); %a fixed-point iteration algorithm for solving CARE
     B1t = B1.';
     C1t = C1.';
     gamma_l = hinf_norm(A - Z*C1t*C1, C1t, B1t, 0);
     
-    %approximate a upper bound
+    %assign an upper bound gamma
+    gamma_u = 1e10;
     
     %bisection and secant method start
     while(abs(gamma_u - gamma_l) > eps)
@@ -24,11 +24,12 @@ function [gamma, X]=hinf_syn(A, B1, B2, C1, D)
              -C1t*C1,                       -A.'            ];
     
         if(has_pure_img_eigen(H) == 0)
-            [T1, T2] = get_stable_invariant_subspace(H);           
-            X = T2 * inv(T1);
+            [T1, T2] = get_stable_invariant_subspace(H);      
+            X = real(T2 * inv(T1)); %we extract the real part of X only since the
+                                    %imaginary part may remained by numerical errors
             
             if(is_psd_matrix(X) == 1)
-               gamma_u = gamma; %decrease gamma upper bound 
+               gamma_u = gamma; %decrease gamma upper bound
             else
                gamma_l = gamma; %increase gamma lower bound
             end         

@@ -17,8 +17,8 @@ classdef dynamics
         R_det;
         
         d = zeros(6, 1); %disturbance
-        sigma_f_w = 2.5;   %distribution of the force disturbance
-        sigma_tau_w = 2.5; %distribution of the torque disturbance
+        sigma_f_w = 3;   %distribution of the force disturbance
+        sigma_tau_w = 1.5; %distribution of the torque disturbance
         tau_c = 3.2;     %correlation time of the wind disturbance
         
         prv_angle;

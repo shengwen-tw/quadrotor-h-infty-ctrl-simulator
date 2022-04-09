@@ -5,7 +5,6 @@ math = se3_math;
 % Simulation options %
 %====================%
 ITERATION_TIMES = 10000;
-COMPARE_MATLAB_SDA = 1;
 
 %================%
 % UAV parameters %
@@ -114,13 +113,10 @@ yaw_d = zeros(1, ITERATION_TIMES);
 
 %plot datas
 time_arr = zeros(1, ITERATION_TIMES);
-speed_inc_arr = zeros(1, ITERATION_TIMES);
-sda_time_arr = zeros(1, ITERATION_TIMES);
 
-matlab_x_norm_arr = zeros(1, ITERATION_TIMES);
-sda_x_norm_arr = zeros(1, ITERATION_TIMES);
+bisection_x_norm_arr = zeros(1, ITERATION_TIMES);
+bisection_time_arr = zeros(1, ITERATION_TIMES);
 
-matlab_time_arr = zeros(1, ITERATION_TIMES);
 vel_arr = zeros(3, ITERATION_TIMES);
 R_arr = zeros(3, 3, ITERATION_TIMES);
 euler_arr = zeros(3, ITERATION_TIMES);
@@ -259,46 +255,20 @@ for i = 1: ITERATION_TIMES
           xd(2, i);   %desired y position
           xd(3, i)];  %desired z position
      
-    %=========================================================%
-    % solve CARE (Continuous-time Algebraic Riccati Equation) %
-    %=========================================================%
+    %====================%
+    % H-infinity control %
+    %====================%
     
     %H-infinity control synthesis
-    %tstart = tic();
-    [gamma, X_] = hinf_syn(A, B1, B2, C1, 0);
-    %sda_time = toc(tstart);
-    %inv_r2 = 1 / (gamma*gamma);
-    %r2_B1B1t_B2B2t = -((inv_r2 .* B1B1t) - B2B2t);
-    %sda_x_norm = norm(At*X_ + X_*A - X_*r2_B1B1t_B2B2t*X_ + C1tC1)
+    tstart = tic();
+    [gamma, X] = hinf_syn(A, B1, B2, C1, 0); %bisection and secant method [Lin/Wang/Xu 1999 LAA, 287, 223-255]
+    bisection_time = toc(tstart);
     
-    %method1: SDA (Structure-Preserving Doubling Algorithm)
+    %exame the answer with the CARE (Continuous-time Algebraic Riccati Equation)
     inv_r2 = 1 / (gamma*gamma);
     r2_B1B1t_B2B2t = -((inv_r2 .* B1B1t) - B2B2t);
-    %
-    tstart = tic();
-    X = care_sda(A, B2, C1tC1, r2_B1B1t_B2B2t);
-    sda_time = toc(tstart);
-    sda_x_norm = norm(At*X + X*A - X*r2_B1B1t_B2B2t*X + C1tC1);
-        
-    %method2: MATLAB
-    if COMPARE_MATLAB_SDA ~= 0
-        B = [B1, B2];
-        Bt = B.';
-        m1 = size(B1, 2);
-        m2 = size(B2, 2);
-        R = [-gamma^2*eye(m1) zeros(m1, m2);
-                 zeros(m2,m1)      eye(m2)];
-        BRBt = B * R * Bt;
-        %
-        tstart = tic();
-        [X_, L, G_dummy] = care(A, B, C1tC1, R);
-        matlab_time = toc(tstart);
-        matlab_x_norm = norm(At*X_ + X_*A - X_*BRBt*X_ + C1tC1);
-    
-        %efficiency comparison of CARE solvers
-        speed_inc = matlab_time / sda_time;
-    end
-    
+    bisection_x_norm = norm(At*X + X*A - X*r2_B1B1t_B2B2t*X + C1tC1);
+      
     %calculate feedback control
     C0_hat = -B2t * X;
     u_fb = C0_hat * [x - x0];
@@ -321,14 +291,8 @@ for i = 1: ITERATION_TIMES
     % Record datas for plotting %
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     time_arr(i) = i * uav_dynamics.dt;
-    if COMPARE_MATLAB_SDA ~= 0
-        sda_time_arr(i) = sda_time;
-        matlab_time_arr(i) = matlab_time;
-        matlab_x_norm_arr(i) = matlab_x_norm;
-        sda_x_norm_arr(i) = sda_x_norm;
-        speed_inc_arr(i) = speed_inc;
-        sda_time_arr(i) = sda_time;
-    end
+    bisection_time_arr(i) = bisection_time;
+    bisection_x_norm_arr(i) = bisection_x_norm;
     vel_arr(:, i) = uav_dynamics.v;
     pos_arr(:, i) = uav_dynamics.x;
     R_arr(:, :, i) = uav_dynamics.R;
@@ -407,28 +371,21 @@ plot(time_arr, -pos_arr(3, :), time_arr, -xd(3, :));
 xlabel('time [s]');
 ylabel('-z [m]');
 
-if COMPARE_MATLAB_SDA ~= 0
-    %time cost of the CARE solvers
-    figure('Name', 'time cost of CARE solvers');
-    title('time cost');
-    plot(time_arr, sda_time_arr, time_arr, matlab_time_arr);
-    xlabel('time [s]');
-    ylabel('cost [s]');
-    legend('SDA CARE', 'MATLAB CARE');
+%time cost of the CARE solvers
+figure('Name', 'time cost of the H-infinity control synthesizer');
+title('time cost');
+plot(time_arr, bisection_time_arr);
+xlabel('time [s]');
+ylabel('cost [s]');
+legend('bisection algorithm');
 
-    %speed improvement of SDA compare to the MATLAB CARE
-    figure('Name', 'SDA / MATLAB CARE');
-    plot(time_arr, speed_inc_arr);
-
-    %precision of CARE solvers
-    disp(mean(speed_inc_arr));
-    figure('Name', 'precision of CARE solvers');
-    title('precision (norm of CARE)');
-    plot(time_arr, sda_x_norm_arr, time_arr, matlab_x_norm_arr);
-    xlabel('time [s]');
-    ylabel('CARE norm');
-    legend('SDA CARE', 'MATLAB CARE');
-end
+%precision of H-infinity control synthesizer
+figure('Name', 'precision of the H-infinity control synthesizer');
+title('precision (norm of CARE)');
+plot(time_arr, bisection_x_norm_arr);
+xlabel('time [s]');
+ylabel('CARE norm');
+legend('bisection algorithm');
 
 %disturbance
 figure('Name', 'disturbances');
