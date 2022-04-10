@@ -12,8 +12,9 @@ function [gamma, X]=hinf_syn(A, B1, B2, C1, D)
     %disp(z_norm)
     B1t = B1.';
     C1t = C1.';
-    %gamma_l = hinf_norm((A - Z*C1t*C1).', C1t, B1t, 0);
     gamma_l = hinf_norm((A - Z*C1t*C1).', C1t, B1t, 0) + 100;
+    disp('gamma_lb:');
+    disp(gamma_l);
     
     %approximate an upper bound gamma:
     %this is not the exact upper bound of the gamma. user should check
@@ -23,19 +24,21 @@ function [gamma, X]=hinf_syn(A, B1, B2, C1, D)
     gamma_u = rho_max / rho_0;
     %gamma_u = 1e10;
     
-    %bisection and secant method start
-    while(abs(gamma_u - gamma_l) > eps)
-        iteration = iteration + 1;
-        
-        %bisection searching
-        gamma = (gamma_l + gamma_u) / 2;
+    gamma = (gamma_l + gamma_u) / 2;
     
+    %bisection and secant method start
+    while(1)
+        iteration = iteration + 1;
+            
         %construct Hamiltonian matrix
-        H = [   A,         1/(gamma*gamma).*(B1*B1t) - B2*B2t;
-             -C1t*C1,                       -A.'            ];
+        H = [   A,     1/(gamma*gamma).*(B1*B1t) - B2*B2t;
+             -C1t*C1,                   -A.'            ];
     
         if(has_pure_img_eigen(H) == 0)
             [T1, T2] = get_stable_invariant_subspace(H);      
+            %disp(size([T1; T2]));
+            %norm([T1; T2])
+            
             X = real(T2 * inv(T1)); %we extract the real part of X only since the
                                     %imaginary part may remained by numerical errors
             
@@ -46,9 +49,32 @@ function [gamma, X]=hinf_syn(A, B1, B2, C1, D)
             end         
         else
             gamma_l = gamma; %increase gamma lower bound
-        end    
+        end
+        
+        gamma = (gamma_l + gamma_u) / 2;
+        
+        if (gamma_u - gamma_l) < eps
+            if(is_psd_matrix(X) == 0)
+                gamma_l = gamma;
+                gamma_u = 1e10;
+            else
+                break;
+            end
+            break;
+        end
     end
     
+    %plot the complex eigenvalues of the Hamiltonian matrix
+    if 0
+        H = [   A,    1/(gamma*gamma).*(B1*B1t) - B2*B2t;
+            -C1t*C1,                   -A.'            ];
+        [V, D] = eig(H);
+        eig_ = diag(D);
+        plot(real(eig_), imag(eig_), '*')
+        grid on;
+    end
+    
+    %disp(X);
     %disp(iteration);
 end
 
@@ -69,16 +95,17 @@ function [T1, T2]=get_stable_invariant_subspace(H)
     
     T1 = V_stable(1:m/2, :);
     T2 = V_stable(m/2+1:m, :);
-    
+
+    %disp(diag(D_stable))
     %disp(norm(H*V_new - V_new*D_new));
 end
 
 function retval=has_pure_img_eigen(H)
     retval = 0;
     [V, D] = eig(H);
-        
+    
     for i= 1 : max(size(H))
-        if(~isreal(D(i, i)) && abs(real(D(i, i))) < 1e-6)
+        if(~isreal(D(i, i)) && abs(real(D(i, i))) < 1e-4)
             retval = 1;
             return;
         end
