@@ -1,4 +1,5 @@
 function quadrotor_sim
+close all;
 math = se3_math;
 
 %====================%
@@ -263,12 +264,26 @@ for i = 1: ITERATION_TIMES
     tstart = tic();
     [gamma, X] = hinf_syn(A, B1, B2, C1, 0); %bisection and secant method [Lin/Wang/Xu 1999 LAA, 287, 223-255]
     bisection_time = toc(tstart);
+    %disp('gamma_x:');
+    %disp(gamma);
     
     %exame the answer with the CARE (Continuous-time Algebraic Riccati Equation)
     inv_r2 = 1 / (gamma*gamma);
     r2_B1B1t_B2B2t = -((inv_r2 .* B1B1t) - B2B2t);
-    bisection_x_norm = norm(At*X + X*A - X*r2_B1B1t_B2B2t*X + C1tC1);
-      
+    bisection_x_norm = norm(At*X + X*A - X*r2_B1B1t_B2B2t*X + C1tC1)
+    
+    %exam the gamma is indeed the optimal solution
+    if 0
+        C0_hat = -B2t * X;
+        sys=ss(A + B2*C0_hat, B1, C1 + D12*C0_hat, 0);
+        sigma(sys, ss(gamma));
+    end
+            
+    %G = B2*B2.';
+    %H = C1.'*C1;
+    %X = care_sda(A, B1, H, G);
+    %norm(At*X + X*A - X*G*X + H);
+    
     %calculate feedback control
     C0_hat = -B2t * X;
     u_fb = C0_hat * [x - x0];
@@ -414,10 +429,10 @@ plot(time_arr, d_arr(6, :));
 xlabel('time [s]');
 ylabel('-\tau_{wz}');
 
+delete(progress_tok);
 disp("Press any key to leave");
 pause;
 close all;
-delete(progress_tok);
 end
 
 function quad_sim_greeting(dynamics, iteration_times, init_attitude)
