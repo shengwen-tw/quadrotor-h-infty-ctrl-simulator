@@ -17,8 +17,8 @@ classdef dynamics
         R_det;
         
         d = zeros(6, 1); %disturbance
-        sigma_f_w = 3;   %distribution of the force disturbance
-        sigma_tau_w = 1.5; %distribution of the torque disturbance
+        sigma_f_w = 2;   %distribution of the force disturbance
+        sigma_tau_w = 1; %distribution of the torque disturbance
         tau_c = 3.2;     %correlation time of the wind disturbance
         
         prv_angle;
@@ -44,7 +44,7 @@ classdef dynamics
             noise(4:6) = obj.sigma_tau_w * noise(4:6);
             if 1
                 %disturbance as random noise:
-                obj.d = noise;
+                obj.d = [0;0;0;0;0;0];noise;
             else
                 %disturbance as ODE
                 %d_dot = A_d * obj.d + noise;

@@ -68,18 +68,18 @@ B2 = [0   0   0   0;
       0   0   0   0];
 
 C1 = zeros(16, 12);
-C1(1, 1) = 300;    %roll
-C1(2, 2) = 300;    %pitch
-C1(3, 3) = 750;    %yaw
+C1(1, 1) = 200;    %roll
+C1(2, 2) = 200;    %pitch
+C1(3, 3) = 500;    %yaw
 C1(4, 4) = 10;     %roll rate
 C1(5, 5) = 10;     %pitch rate
-C1(6, 6) = 10;     %yaw rate
-C1(7, 7) = 900;    %vx
-C1(8, 8) = 900;    %vy
-C1(9, 9) = 900;    %vz
-C1(10, 10) = 2500; %x
-C1(11, 11) = 2500; %y
-C1(12, 12) = 3000; %z
+C1(6, 6) = 20;     %yaw rate
+C1(7, 7) = 700;    %vx
+C1(8, 8) = 700;    %vy
+C1(9, 9) = 500;    %vz
+C1(10, 10) = 2000; %x
+C1(11, 11) = 2000; %y
+C1(12, 12) = 1000; %z
 
 D12 = [0 0 0 0;
        0 0 0 0;
@@ -125,6 +125,7 @@ pos_arr = zeros(3, ITERATION_TIMES);
 W_arr = zeros(3, ITERATION_TIMES);
 M_arr = zeros(3, ITERATION_TIMES);
 d_arr = zeros(6, ITERATION_TIMES);
+gamma_arr = zeros(1, ITERATION_TIMES);
 
 %%%%%%%%%%%%%%%%%%%%%
 %   path planning   %
@@ -262,15 +263,11 @@ for i = 1: ITERATION_TIMES
     
     %H-infinity control synthesis
     tstart = tic();
-    [gamma, X] = hinf_syn(A, B1, B2, C1, 0); %bisection and secant method [Lin/Wang/Xu 1999 LAA, 287, 223-255]
+    [gamma, X, X_norm] = hinf_syn(A, B1, B2, C1, 0);
     bisection_time = toc(tstart);
-    %disp('gamma_x:');
-    %disp(gamma);
     
-    %exame the answer with the CARE (Continuous-time Algebraic Riccati Equation)
-    inv_r2 = 1 / (gamma*gamma);
-    r2_B1B1t_B2B2t = -((inv_r2 .* B1B1t) - B2B2t);
-    bisection_x_norm = norm(At*X + X*A - X*r2_B1B1t_B2B2t*X + C1tC1)
+    disp('gamma_x:');
+    disp(gamma);
     
     %exam the gamma is indeed the optimal solution
     if 0
@@ -279,11 +276,6 @@ for i = 1: ITERATION_TIMES
         sigma(sys, ss(gamma));
     end
             
-    %G = B2*B2.';
-    %H = C1.'*C1;
-    %X = care_sda(A, B1, H, G);
-    %norm(At*X + X*A - X*G*X + H);
-    
     %calculate feedback control
     C0_hat = -B2t * X;
     u_fb = C0_hat * [x - x0];
@@ -307,7 +299,8 @@ for i = 1: ITERATION_TIMES
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     time_arr(i) = i * uav_dynamics.dt;
     bisection_time_arr(i) = bisection_time;
-    bisection_x_norm_arr(i) = bisection_x_norm;
+    bisection_x_norm_arr(i) = X_norm;
+    gamma_arr(i) = gamma;
     vel_arr(:, i) = uav_dynamics.v;
     pos_arr(:, i) = uav_dynamics.x;
     R_arr(:, :, i) = uav_dynamics.R;
@@ -428,6 +421,12 @@ subplot (3, 2, 6);
 plot(time_arr, d_arr(6, :));
 xlabel('time [s]');
 ylabel('-\tau_{wz}');
+
+figure('Name', 'Optimal H-infinity control gamma');
+title('optimal gamma');
+plot(time_arr, gamma_arr);
+xlabel('time [s]');
+ylabel('\gamma_x');
 
 delete(progress_tok);
 disp("Press any key to leave");
