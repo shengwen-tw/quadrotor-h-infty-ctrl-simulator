@@ -4,7 +4,9 @@
 %iteration_times: total count of the rigidbodys pose
 %sleep_time: the time to sleep after every iteration of visualization
 %skip_cnt: skip count of the visualization since it is too slow
-function rigidbody_visualize(plot_size, rigidbody_pos, rigidbody_R, iterate_times, sleep_time, skip_cnt)
+function rigidbody_visualize(plot_size, rigidbody_pos, rigidbody_R, iterate_times, sleep_time)
+skip_cnt = round(0.05 / sleep_time);
+
 %define shape of quadrotor
 [x1 y1 z1] = cylinder([0.2 0.2]);
 [x2, y2, z2] = cylinder([0.15, 0.0]);
@@ -60,7 +62,7 @@ for i = 1: skip_cnt: iterate_times
     %display
     view(3)
     grid on;
-    pause(sleep_time);
+    pause(0.05);
     
     if (i + skip_cnt < iterate_times)
         clf;
