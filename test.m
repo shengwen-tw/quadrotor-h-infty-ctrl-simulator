@@ -105,7 +105,7 @@ D12 = [0 0 0 0;
        0 0 0 1];
 
 %H-infinity synthesis
-if 1
+if 0
 [gamma, X] = hinf_syn(A, B1, B2, C1, 0);
 disp(sprintf("gamma: %d\ngamma(db):%d", gamma, mag2db(gamma)))
 %
@@ -144,4 +144,21 @@ disp(gamma)
 C0_hat = -B2.' * X;
 sys=ss(A + B2*C0_hat, B1, C1 + D12*C0_hat, 0);
 sigma(sys, ss(gamma));
+end
+
+%test symmetric matrix tridiagonalization
+if 0
+A = [4 1 -2 2;
+     1 2 0 1;
+     -2 0 3 -2;
+     2 1 -2 -1];
+[P, T] = tridiag(A);
+answer = [ 4  -3    0      0;
+          -3 10/3 -5/3     0;
+           0 -5/3 -33/25 68/75;
+           0   0   68/75 149/75];
+disp(answer);
+disp(T);
+disp(P * A * P.') %T = P*A*Pt
+disp(P);
 end
