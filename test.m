@@ -148,10 +148,10 @@ end
 
 %test symmetric matrix tridiagonalization
 if 0
-A = [4 1 -2 2;
-     1 2 0 1;
-     -2 0 3 -2;
-     2 1 -2 -1];
+A = [ 4 1 -2  2;
+      1 2  0  1;
+     -2 0  3 -2;
+      2 1 -2 -1];
 [P, T] = tridiag(A);
 answer = [ 4  -3    0      0;
           -3 10/3 -5/3     0;
@@ -161,4 +161,17 @@ disp(answer);
 disp(T);
 disp(P * A * P.') %T = P*A*Pt
 disp(P);
+end
+
+%test diagonalization for tridiagonalized matrix
+if 0
+T = [ 4  -3    0      0;
+     -3 10/3 -5/3     0;
+      0 -5/3 -33/25 68/75;
+      0   0   68/75 149/75]
+  
+[L, D] = ldl_tri(T);
+disp(D);
+disp(L*T*L.')
+%disp(L);
 end
