@@ -118,15 +118,25 @@ for i= 1 : max(size(H))
 end
 end
 
-function retval=is_psd_matrix(A)
-retval = 1;
-[V, D] = eig(A);
-for i= 1 : max(size(A))
-    if(real(D(i, i)) < 0)
-        retval = 0;
-        return;
+%check "calculating the inertia of a real symmetric (or tridiagonal) matrix"
+%on "math.stackexchange.com"
+function flag=is_psd_matrix(T1, T2)
+    flag = 1;
+    [P, Omega] = tridiag(T1.'*T2);
+    [L, D] = ldl_tri(Omega);
+    
+    %disp(Omega);
+    %disp(D);
+    
+    %check inertia of the matrix
+    for i = 1:max(size(Omega))
+        %if exisits negative element of the D matrix,
+        %X is not P.S.D
+        if(D(i, i) < 0)
+            flag = 0;
+            return;
+        end
     end
-end
 end
 
 function [X, state] = modified_sda(A, B, H, G)
