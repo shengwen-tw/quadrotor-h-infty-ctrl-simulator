@@ -177,7 +177,7 @@ disp(L*T*L.')
 end
 
 %test hessenberg form transformation
-%if 0
+if 0
 A =[16     2     3    13
      5    11    10     8
      9     7     6    12
@@ -187,4 +187,21 @@ A =[16     2     3    13
 disp(A);
 disp(H);
 disp(Q*A*Q.')
-endif
+end
+
+%test qr iteration
+if 0
+A = [2.00000    3.00000    1.00000    0.50000    4.00000
+     4.00000    5.00000    7.00000    0.10000    1.00000
+     5.00000    3.00000    6.00000   19.20000    9.00000
+     1.00000    4.00000    1.00000    4.00000    7.00000
+     3.00000    1.00000    6.00000    2.00000    6.00000];
+disp("MATLAB:");
+S = schur(A)
+eig(S)
+disp("Mine:");
+[Q, S, eig_val] = qr_iteration(A, 10000);
+disp(S);
+disp(eig_val);
+disp(Q.' * A * Q)
+end
