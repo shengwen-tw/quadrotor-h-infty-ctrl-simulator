@@ -175,3 +175,16 @@ disp(D);
 disp(L*T*L.')
 %disp(L);
 end
+
+%test hessenberg form transformation
+%if 0
+A =[16     2     3    13
+     5    11    10     8
+     9     7     6    12
+     4    14    15     1];
+%A = magic(5);
+[Q, H] = hessenberg(A);
+disp(A);
+disp(H);
+disp(Q*A*Q.')
+endif
