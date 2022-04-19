@@ -27,7 +27,7 @@ execute quadrotor_sim.m
 
 ``care_sda.m``: Structure-Preserving Doubling Algorithm (SDA), a numerical method for solving Algebraic Riccati Equation.
 
-``hinf_syn.m``: A H-infinity control solver based on the bisection method and SDA.
+``hinf_syn.m``: A H∞ control solver based on the bisection method and SDA.
 
 ## References
 
