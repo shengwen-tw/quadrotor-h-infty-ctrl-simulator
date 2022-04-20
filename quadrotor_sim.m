@@ -67,19 +67,17 @@ B2 = [0   0   0   0;
       0   0   0   0;
       0   0   0   0];
 
-C1 = zeros(16, 12);
-C1(1, 1) = 200;    %roll
-C1(2, 2) = 200;    %pitch
-C1(3, 3) = 500;    %yaw
-C1(4, 4) = 10;     %roll rate
-C1(5, 5) = 10;     %pitch rate
-C1(6, 6) = 20;     %yaw rate
-C1(7, 7) = 700;    %vx
-C1(8, 8) = 700;    %vy
-C1(9, 9) = 500;    %vz
-C1(10, 10) = 2000; %x
-C1(11, 11) = 2000; %y
-C1(12, 12) = 1000; %z
+C1 = zeros(14, 12);
+C1(1, 3) = 700;    %yaw
+C1(2, 4) = 25;     %roll rate
+C1(3, 5) = 25;     %pitch rate
+C1(4, 6) = 20;     %yaw rate
+C1(5, 7) = 700;    %vx
+C1(6, 8) = 700;    %vy
+C1(7, 9) = 800;    %vz
+C1(8, 10) = 2000;  %x
+C1(9, 11) = 2000;  %y
+C1(10, 12) = 1000; %z
 
 D12 = [0 0 0 0;
        0 0 0 0;
@@ -131,7 +129,7 @@ gamma_arr = zeros(1, ITERATION_TIMES);
 %   path planning   %
 %%%%%%%%%%%%%%%%%%%%%
 % cirular trajectory
-radius = 0.5;         %[m]
+radius = 0.8;         %[m]
 circum_rate = 0.25;   %[hz], times of finished a circular trajectory per second
 climb_rate = -0.05;
 yaw_rate = 0.05;      %[hz], times of full rotation around z axis per second
@@ -160,6 +158,11 @@ for i = 1: ITERATION_TIMES
     vd(1, i) = radius * -sin(circum_rate * uav_dynamics.dt * i * pi);
     vd(2, i) = radius * cos(circum_rate * uav_dynamics.dt * i * pi);
     vd(3, i) = climb_rate;
+    
+    if i == 1
+        uav_dynamics.v = vd(:, 1);
+        uav_dynamics.x = xd(:, 1);
+    end
 end
 
 progress_tok = waitbar(0, 'Starting');
@@ -173,9 +176,9 @@ for i = 1: ITERATION_TIMES
     %========================%
     uav_dynamics = update(uav_dynamics);
     
-    %=======================%
-    % Quadrotor LQR Control %
-    %=======================%
+    %===============%
+    % Linearization %
+    %===============%
     
     eulers = math.dcm_to_euler(uav_dynamics.R); %get euler angles from R matrix
     v_b = uav_dynamics.R * uav_dynamics.v;      %get body frame velocity
@@ -243,19 +246,19 @@ for i = 1: ITERATION_TIMES
         uav_dynamics.x(2);
         uav_dynamics.x(3)];
     
-    %construct desired setpoint vector
-    x0 = [deg2rad(0); %desired roll
-        deg2rad(0); %desired pitch
-        deg2rad(0); %yaw_d(i); %desired yaw
-        0;          %desired roll
-        0;          %desired pitch
-        0;          %desired yaw
-        vd(1, i);   %desired x velocity
-        vd(2, i);   %desired y velocity
-        vd(3, i);   %desired z velocity
-        xd(1, i);   %desired x position
-        xd(2, i);   %desired y position
-        xd(3, i)];  %desired z position
+        %construct desired setpoint vector
+    x0 = [0;          %roll (don't care)
+          0;          %pitch (don't care)
+          deg2rad(0); %desired yaw
+          0;          %desired roll
+          0;          %desired pitch
+          0;          %desired yaw
+          vd(1, i);   %desired x velocity
+          vd(2, i);   %desired y velocity
+          vd(3, i);   %desired z velocity
+          xd(1, i);   %desired x position
+          xd(2, i);   %desired y position
+          xd(3, i)];  %desired z position
     
     %====================%
     % H-infinity control %
@@ -286,13 +289,10 @@ for i = 1: ITERATION_TIMES
     
     %obtain complete control input
     u = u_ff + u_fb;
-    
-    lqr_f = uav_dynamics.R * [0; 0; u(1)];
-    lqr_M = [u(2); u(3); u(4)];
-    
+        
     %feed control to uav dynamics
-    uav_dynamics.f = lqr_f;
-    uav_dynamics.M = lqr_M;
+    uav_dynamics.f = uav_dynamics.R * [0; 0; u(1)];
+    uav_dynamics.M = [u(2); u(3); u(4)];
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % Record datas for plotting %
