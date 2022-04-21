@@ -68,16 +68,16 @@ B2 = [0   0   0   0;
       0   0   0   0];
 
 C1 = zeros(14, 12);
-C1(1, 3) = 700;    %yaw
-C1(2, 4) = 25;     %roll rate
-C1(3, 5) = 25;     %pitch rate
-C1(4, 6) = 20;     %yaw rate
-C1(5, 7) = 700;    %vx
-C1(6, 8) = 700;    %vy
-C1(7, 9) = 800;    %vz
-C1(8, 10) = 2000;  %x
-C1(9, 11) = 2000;  %y
-C1(10, 12) = 1000; %z
+C1(1, 3) = 90;    %yaw
+C1(2, 4) = 3;     %roll rate
+C1(3, 5) = 3;     %pitch rate
+C1(4, 6) = 10;    %yaw rate
+C1(5, 7) = 45;    %vx
+C1(6, 8) = 45;    %vy
+C1(7, 9) = 100;    %vz
+C1(8, 10) = 120;  %x
+C1(9, 11) = 120;  %y
+C1(10, 12) = 160; %z
 
 D12 = [0 0 0 0;
        0 0 0 0;
@@ -129,7 +129,7 @@ gamma_arr = zeros(1, ITERATION_TIMES);
 %   path planning   %
 %%%%%%%%%%%%%%%%%%%%%
 % cirular trajectory
-radius = 0.8;         %[m]
+radius = 1.5;         %[m]
 circum_rate = 0.25;   %[hz], times of finished a circular trajectory per second
 climb_rate = -0.05;
 yaw_rate = 0.05;      %[hz], times of full rotation around z axis per second

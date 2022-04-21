@@ -1,8 +1,8 @@
 %a bisection method to sythesis the H-infinity control solution with
 %minimal gamma using the structure-preserving doubling algorithm
-function [gamma, X, ric_residual]=hinf_syn(A, B1, B2, C1, D)
+function [gamma, X, ric_residual]=hinf_syn(A, B1, B2, C1, D)     
 eps = 1e-6;
-residual_eps = 1e-4;
+residual_eps = 1e-7;
 
 %record of total iteration numbers
 iteration = 0;
@@ -42,11 +42,12 @@ while 1
     gamma = (gamma_l + gamma_u) / 2;
     
     H = C1tC1;
-    G = B2B2t - (1 / (gamma*gamma) .* B1B1t);
+    G = B2B2t - (B1B1t / (gamma*gamma));
     
     %construct Hamiltonian matrix
     Ham = [ A, -G;
            -H, -At];
+    Ham = balance(Ham);
     
     if(has_pure_img_eigen(Ham) == 0)
         [X, fail] = care_sda(A, H, G);

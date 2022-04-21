@@ -36,11 +36,11 @@ while 1
     H_hat_last = H_Hat_new;
     
     %diverge
-    if (norm_H_now - norm_H_last) < 0
-        X = [];
-        fail = 1;
-        return;
-    end
+    %if (norm_H_now - norm_H_last) < 0
+    %    X = [];
+    %    fail = 1;
+    %    return;
+    %end
     
     %stop iteration if converged
     if abs(norm_H_now - norm_H_last) < 1e-16
