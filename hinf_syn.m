@@ -1,6 +1,6 @@
 %a bisection method to sythesis the H-infinity control solution with
 %minimal gamma using the structure-preserving doubling algorithm
-function [gamma, X, ric_residual]=hinf_syn(A, B1, B2, C1, D)     
+function [gamma, gamma_lb, X, ric_residual]=hinf_syn(A, B1, B2, C1, D)     
 eps = 1e-6;
 residual_eps = 1e-7;
 
@@ -17,7 +17,8 @@ C1tC1 = C1.'*C1;
 H = B2B2t;
 G = C1tC1;
 [Z, fail] = care_sda(At, H, G);
-gamma_l = hinf_norm((A - Z*C1tC1).', C1.', B1.', 0);
+gamma_lb = hinf_norm((A - Z*C1tC1).', C1.', B1.', 0);
+gamma_l = gamma_lb;
 %disp(norm(A*Z + Z*At - Z*G*Z + H));
 %disp('gamma_lb:');
 %disp(gamma_l);
@@ -77,6 +78,7 @@ while 1
     if (gamma_u - gamma_l) < eps
         if(optimal_residual < residual_eps)
             %accept the solution
+            ric_residual = optimal_residual;
             gamma = optimal_gamma;
             X = optimal_X;
             %disp(iteration);
