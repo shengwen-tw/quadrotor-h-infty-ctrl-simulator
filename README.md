@@ -19,7 +19,7 @@ execute quadrotor_sim.m
 
 ``dynamics.m``: The quadrotor dynamics model.
 
-``hinf_norm.m``: The function of calculating H∞ norm.
+``hinf_norm.m``: The function for calculating H∞ norm.
 
 ``rigidbody_visualize.m``: The 3D animation for quadrotor visualization.
 
