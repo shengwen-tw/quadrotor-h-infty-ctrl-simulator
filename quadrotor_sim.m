@@ -5,7 +5,7 @@ math = se3_math;
 %====================%
 % Simulation options %
 %====================%
-ITERATION_TIMES = 10000;        %10 seconds of simulation
+ITERATION_TIMES = 20000;        %10 seconds of simulation
 
 %================%
 % UAV parameters %
@@ -68,10 +68,10 @@ B2 = [0   0   0   0;
       0   0   0   0];
 
 C1 = zeros(14, 12);
-C1(1, 3) = 100;   %yaw
-C1(2, 4) = 3;     %roll rate
-C1(3, 5) = 3;     %pitch rate
-C1(4, 6) = 10;    %yaw rate
+C1(1, 3) = 125;   %yaw
+C1(2, 4) = 5;     %roll rate
+C1(3, 5) = 5;     %pitch rate
+C1(4, 6) = 20;    %yaw rate
 C1(5, 7) = 50;    %vx
 C1(6, 8) = 50;    %vy
 C1(7, 9) = 150;   %vz
@@ -317,62 +317,84 @@ rigidbody_visualize([5; 5; 5], pos_arr, R_arr, ITERATION_TIMES, uav_dynamics.dt)
 %attitude (euler angles)
 figure('Name', 'attitude (euler angles)');
 subplot (3, 1, 1);
-plot(time_arr, euler_arr(1, :));
+plot(time_arr, euler_arr(1, :), 'LineWidth', 1);
+grid on
 xlabel('time [s]');
 ylabel('roll [deg]');
 subplot (3, 1, 2);
-plot(time_arr, euler_arr(2, :));
+plot(time_arr, euler_arr(2, :),'LineWidth', 1);
+grid on
 xlabel('time [s]');
 ylabel('pitch [deg]');
 subplot (3, 1, 3);
-plot(time_arr, euler_arr(3, :));
+plot(time_arr, euler_arr(3, :), [0, ITERATION_TIMES * uav_dynamics.dt], [0, 0], 'LineWidth', 1);
+grid on
 xlabel('time [s]');
 ylabel('yaw [deg]');
+legend('yaw', 'setpoint');
 
 %angular velocity
 figure('Name', 'Angular velocity');
 subplot (3, 1, 1);
-plot(time_arr, W_arr(1, :));
+plot(time_arr, W_arr(1, :), [0, ITERATION_TIMES * uav_dynamics.dt], [0, 0], 'LineWidth', 1);
+grid on
 xlabel('time [s]');
 ylabel('x [deg/s]');
+legend('p', 'setpoint');
 subplot (3, 1, 2);
-plot(time_arr, W_arr(2, :));
+plot(time_arr, W_arr(2, :), [0, ITERATION_TIMES * uav_dynamics.dt], [0, 0], 'LineWidth', 1);
+grid on
 xlabel('time [s]');
 ylabel('y [deg/s]');
+legend('q', 'setpoint');
 subplot (3, 1, 3);
-plot(time_arr, W_arr(3, :));
+plot(time_arr, W_arr(3, :), [0, ITERATION_TIMES * uav_dynamics.dt], [0, 0], 'LineWidth', 1);
+grid on
 xlabel('time [s]');
 ylabel('z [deg/s]');
+legend('r', 'setpoint');
 
 %velocity
 figure('Name', 'velocity (NED frame)');
 subplot (3, 1, 1);
-plot(time_arr, vel_arr(1, :), time_arr, vd(1, :));
+plot(time_arr, vel_arr(1, :), time_arr, vd(1, :),'LineWidth', 1);
+grid on
 xlabel('time [s]');
-ylabel('x [m/s]');
+ylabel('v_x [m/s]');
+legend('x velocity', 'setpoint');
 subplot (3, 1, 2);
-plot(time_arr, vel_arr(2, :), time_arr, vd(2, :));
+plot(time_arr, vel_arr(2, :), time_arr, vd(2, :),'LineWidth', 1);
+grid on
 xlabel('time [s]');
-ylabel('y [m/s]');
+ylabel('v_y [m/s]');
+legend('y velocity', 'setpoint');
 subplot (3, 1, 3);
-plot(time_arr, -vel_arr(3, :), time_arr, -vd(3, :));
+plot(time_arr, -vel_arr(3, :), time_arr, -vd(3, :),'LineWidth', 1);
+grid on
 xlabel('time [s]');
-ylabel('-z [m/s]');
+ylabel('v_z [m/s]');
+legend('z velocity', 'setpoint');
 
 %position
 figure('Name', 'position (NED frame)');
 subplot (3, 1, 1);
-plot(time_arr, pos_arr(1, :), time_arr, xd(1, :));
+plot(time_arr, pos_arr(1, :), time_arr, xd(1, :),'LineWidth', 1);
+grid on
+legend('x position', 'setpoint');
 xlabel('time [s]');
 ylabel('x [m]');
 subplot (3, 1, 2);
-plot(time_arr, pos_arr(2, :), time_arr, xd(2, :));
+plot(time_arr, pos_arr(2, :), time_arr, xd(2, :),'LineWidth', 1);
+grid on
+legend('y position', 'setpoint');
 xlabel('time [s]');
 ylabel('y [m]');
 subplot (3, 1, 3);
-plot(time_arr, -pos_arr(3, :), time_arr, -xd(3, :));
+plot(time_arr, -pos_arr(3, :), time_arr, -xd(3, :),'LineWidth', 1);
+grid on
 xlabel('time [s]');
-ylabel('-z [m]');
+ylabel('z [m]');
+legend('z position', 'setpoint');
 
 %time cost of the CARE solvers
 figure('Name', 'time cost of the H-infinity control synthesizer');
@@ -394,35 +416,42 @@ legend('bisection algorithm');
 figure('Name', 'disturbances');
 subplot (3, 2, 1);
 plot(time_arr, d_arr(1, :));
+grid on
 xlabel('time [s]');
-ylabel('f_{wx}');
+ylabel('f_{w,x}');
 subplot (3, 2, 3);
 plot(time_arr, d_arr(2, :));
+grid on
 xlabel('time [s]');
-ylabel('f_{wy}');
+ylabel('f_{w,y}');
 subplot (3, 2, 5);
 plot(time_arr, d_arr(3, :));
+grid on
 xlabel('time [s]');
-ylabel('f_{wz}');
+ylabel('f_{w,z}');
 subplot (3, 2, 2);
 plot(time_arr, d_arr(4, :));
+grid on
 xlabel('time [s]');
-ylabel('\tau_{wx}');
+ylabel('\tau_{w,x}');
 subplot (3, 2, 4);
 plot(time_arr, d_arr(5, :));
+grid on
 xlabel('time [s]');
-ylabel('\tau_{wy}');
+ylabel('\tau_{w,y}');
 subplot (3, 2, 6);
 plot(time_arr, d_arr(6, :));
+grid on
 xlabel('time [s]');
-ylabel('-\tau_{wz}');
+ylabel('-\tau_{w,z}');
 
 figure('Name', 'Optimal H-infinity control gamma');
-title('optimal gamma');
+title('optimal r');
 plot(time_arr, gamma_lb_arr, time_arr, gamma_arr);
-legend('\gamma_{lb}', '\gamma_{x}');
+grid on
+legend('r_{lb}', 'r_{x}');
 xlabel('time [s]');
-ylabel('\gamma_x');
+ylabel('r');
 
 delete(progress_tok);
 disp("Press any key to leave");
