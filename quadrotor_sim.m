@@ -69,12 +69,12 @@ B2 = [0   0   0   0;
 
 C1 = zeros(14, 12);
 C1(1, 3) = 125;   %yaw
-C1(2, 4) = 5;     %roll rate
-C1(3, 5) = 5;     %pitch rate
-C1(4, 6) = 20;    %yaw rate
+C1(2, 4) = 10;    %roll rate
+C1(3, 5) = 10;    %pitch rate
+C1(4, 6) = 25;    %yaw rate
 C1(5, 7) = 50;    %vx
 C1(6, 8) = 50;    %vy
-C1(7, 9) = 150;   %vz
+C1(7, 9) = 100;   %vz
 C1(8, 10) = 200;  %x
 C1(9, 11) = 200;  %y
 C1(10, 12) = 160; %z
@@ -409,8 +409,8 @@ figure('Name', 'precision of the H-infinity control synthesizer');
 title('precision (norm of CARE)');
 plot(time_arr, bisection_x_norm_arr);
 xlabel('time [s]');
-ylabel('CARE norm');
-legend('bisection algorithm');
+ylabel('CARE residual');
+legend('SDA');
 
 %disturbance
 figure('Name', 'disturbances');
