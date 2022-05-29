@@ -5,7 +5,7 @@ math = se3_math;
 %====================%
 % Simulation options %
 %====================%
-ITERATION_TIMES = 20000;        %10 seconds of simulation
+ITERATION_TIMES = 20000;        %20 seconds of simulation
 
 %================%
 % UAV parameters %
@@ -47,9 +47,9 @@ B1 = [0    0   0   0   0   0;
       0    0   0  1/Ix 0   0;
       0    0   0   0  1/Iy 0;
       0    0   0   0   0  1/Iz;
-    -1/m   0   0   0   0   0;
-      0 -1/m   0   0   0   0;
-      0    0 -1/m  0   0   0;
+     1/m   0   0   0   0   0;
+      0  1/m   0   0   0   0;
+      0    0  1/m  0   0   0;
       0    0   0   0   0   0;
       0    0   0   0   0   0;
       0    0   0   0   0   0;];
