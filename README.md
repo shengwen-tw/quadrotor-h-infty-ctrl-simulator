@@ -31,7 +31,7 @@ execute quadrotor_sim.m
 
 ## Publication
 
-This work is published at the 2022 International Automatic Control Conference (CACS) with the title of [Robust State-Feedback H∞ Control of Quadrotor](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=9969787&casa_token=IXjiX-cp5osAAAAA:-ALToy6yONCtmCEGpOZH1Vzc-cfgRPDmdWAgDacZi72vDcybMgIGf8_fnjrCMVh-lVVuEjr-MU4), please feel free to cite the paper.
+This work is published at the 2022 International Automatic Control Conference (CACS) with the title of [Robust State-Feedback H∞ Control of Quadrotor](https://ieeexplore.ieee.org/document/9969787), please feel free to cite the paper.
 
 ## References
 
