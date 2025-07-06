@@ -1,6 +1,8 @@
 # Quadrotor H∞ Control Simulator
 
-H∞ control is a robust control algorithm arised in 1970s. It suppresses the maximum frequency response of the disturbance to ensure the robustness of the system. Mathematicians shows that the optimal control input can be obtained by solving the Algebraic Riccati Equation, which is strongly related to the Hamiltonian matrix.
+> Check our Python implementation here: https://github.com/shengwen-tw/rotor-bench 
+
+H∞ control is a robust control strategy that emerged in the 1970s. It focuses on minimizing the worst-case impact of disturbances on system performance by suppressing the maximum singular value of the transfer function from disturbance to output over all frequencies. This ensures that the system remains stable and performs acceptably even under model uncertainties and external disturbances. The optimal control law is derived by solving an Algebraic Riccati Equation, which is closely linked to the Hamiltonian matrix.
 
 This project provides a design example of using H∞ control to stablize the quadrotor. We also feature that the code is fully standalone without relying on other control toolbox.
 
